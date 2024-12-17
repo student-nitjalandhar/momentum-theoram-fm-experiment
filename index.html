@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Momentum Theorem Experiment</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f5f5;
+        }
+
+        header {
+            background-color: #004080;
+            color: white;
+            padding: 1rem 2rem;
+            text-align: center;
+        }
+
+        header h1 {
+            margin: 0;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 1rem;
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .instructions {
+            padding: 1rem;
+            background-color: #e6f7ff;
+            border: 1px solid #b3d9ff;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+        }
+
+        .instructions h2 {
+            margin-top: 0;
+            color: #004080;
+        }
+
+        .experiment-controls {
+            margin-bottom: 2rem;
+        }
+
+        .experiment-controls label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: bold;
+        }
+
+        .experiment-controls input {
+            width: 100%;
+            padding: 0.5rem;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            margin-bottom: 1rem;
+        }
+
+        .experiment-controls button {
+            background-color: #004080;
+            color: white;
+            padding: 0.7rem 1.5rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .experiment-controls button:hover {
+            background-color: #003060;
+        }
+
+        .results {
+            padding: 1rem;
+            background-color: #e6ffe6;
+            border: 1px solid #b3ffb3;
+            border-radius: 8px;
+        }
+
+        .results h2 {
+            margin-top: 0;
+            color: #006600;
+        }
+
+        footer {
+            text-align: center;
+            padding: 1rem;
+            background-color: #004080;
+            color: white;
+            margin-top: 2rem;
+        }
+
+        footer a {
+            color: #b3d9ff;
+            text-decoration: none;
+        }
+
+        footer a:hover {
+            text-decoration: underline;
+        }
+
+        .simulation {
+            margin-top: 2rem;
+            text-align: center;
+        }
+
+        canvas {
+            border: 1px solid #ccc;
+            background-color: #f0f8ff;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Momentum Theorem Experiment</h1>
+    </header>
+
+    <div class="container">
+        <div class="instructions">
+            <h2>Instructions</h2>
+            <p>Enter the required parameters below to calculate and verify the momentum theorem experimentally. Use the theoretical and experimental forces to check the validity of the theorem.</p>
+        </div>
+
+        <div class="experiment-controls">
+            <label for="mass">Mass (kg):</label>
+            <input type="number" id="mass" placeholder="e.g., 10">
+
+            <label for="time-interval">Time Interval (s):</label>
+            <input type="number" id="time-interval" placeholder="e.g., 5">
+
+            <label for="nozzle-area">Nozzle Area (m<sup>2</sup>):</label>
+            <input type="number" id="nozzle-area" placeholder="e.g., 0.005">
+
+            <label for="velocity">Velocity (m/s):</label>
+            <input type="number" id="velocity" placeholder="e.g., 20">
+
+            <button onclick="calculateForces()">Calculate</button>
+        </div>
+
+        <div class="results" id="results">
+            <h2>Results</h2>
+            <p id="theoretical-force">Theoretical Force: N/A</p>
+            <p id="actual-force">Actual Force: N/A</p>
+            <p id="error-percentage">Error Percentage: N/A</p>
+        </div>
+
+        <div class="simulation">
+            <h2>Simulation</h2>
+            <canvas id="simulationCanvas" width="800" height="400"></canvas>
+        </div>
+    </div>
+
+    <footer>
+        <p>&copy; 2024 Fluid Mechanics Lab | <a href="https://eerc03-iiith.vlabs.ac.in/exp/jets/index.html" target="_blank">Original Experiment</a></p>
+    </footer>
+
+    <script>
+        function calculateForces() {
+            const density = 1000; // Density of water in kg/m³
+            const mass = parseFloat(document.getElementById('mass').value);
+            const timeInterval = parseFloat(document.getElementById('time-interval').value);
+            const nozzleArea = parseFloat(document.getElementById('nozzle-area').value);
+            const velocity = parseFloat(document.getElementById('velocity').value);
+
+            if (isNaN(mass) || isNaN(timeInterval) || isNaN(nozzleArea) || isNaN(velocity)) {
+                alert('Please fill in all fields with valid numbers.');
+                return;
+            }
+
+            // Calculate actual force
+            const actualForce = mass * velocity / timeInterval;
+
+            // Calculate theoretical force
+            const theoreticalForce = 2 * density * nozzleArea * Math.pow(velocity, 2);
+
+            // Calculate error percentage
+            const errorPercentage = Math.abs(theoreticalForce - actualForce) / theoreticalForce * 100;
+
+            // Display results
+            document.getElementById('theoretical-force').innerText = `Theoretical Force: ${theoreticalForce.toFixed(2)} N`;
+            document.getElementById('actual-force').innerText = `Actual Force: ${actualForce.toFixed(2)} N`;
+            document.getElementById('error-percentage').innerText = `Error Percentage: ${errorPercentage.toFixed(2)}%`;
+
+            startSimulation(velocity, nozzleArea);
+        }
+
+        function startSimulation(velocity, nozzleArea) {
+            const canvas = document.getElementById('simulationCanvas');
+            const ctx = canvas.getContext('2d');
+
+            let jetX = 100;
+            const jetY = 200;
+            const vaneX = 600;
+            const vaneY = 180;
+            const jetRadius = nozzleArea * 5000; // Proportional size for visualization
+
+            function drawJet() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+                // Draw jet particles
+                ctx.beginPath();
+                ctx.arc(jetX, jetY, jetRadius, 0, Math.PI * 2);
+                ctx.fillStyle = 'blue';
+                ctx.fill();
+                ctx.closePath();
+
+                // Draw vane
+                ctx.beginPath();
+                ctx.rect(vaneX, vaneY, 20, 100);
+                ctx.fillStyle = 'gray';
+                ctx.fill();
+                ctx.closePath();
+
+                // Draw force arrow
+                ctx.beginPath();
+                ctx.moveTo(vaneX, vaneY + 50);
+                ctx.lineTo(vaneX + 50, vaneY + 50);
+                ctx.lineWidth = 3;
+                ctx.strokeStyle = 'red';
+                ctx.stroke();
+                ctx.closePath();
+
+                ctx.font = '16px Arial';
+                ctx.fillStyle = 'black';
+                ctx.fillText('Force', vaneX + 55, vaneY + 55);
+            }
+
+            function animate() {
+                if (jetX < vaneX - 20) {
+                    jetX += velocity / 20; // Adjust speed based on velocity
+                    drawJet();
+                    requestAnimationFrame(animate);
+                } else {
+                    ctx.font = '20px Arial';
+                    ctx.fillStyle = 'green';
+                    ctx.fillText('Impact!', vaneX + 30, vaneY + 50);
+                }
+            }
+
+            drawJet();
+            animate();
+        }
+    </script>
+</body>
+</html>
