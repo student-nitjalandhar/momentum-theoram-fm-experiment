@@ -3,20 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Flow Over a Notch Experiment</title>
+    <title>Momentum Theorem Experiment</title>
     <style>
         body {
             font-family: Arial, sans-serif;
             margin: 0;
             padding: 0;
-            background-color: #f4f8fb;
+            background-color: #f5f5f5;
         }
 
         header {
             background-color: #004080;
             color: white;
+            padding: 1rem 2rem;
             text-align: center;
-            padding: 1rem;
         }
 
         header h1 {
@@ -24,172 +24,228 @@
         }
 
         .container {
-            max-width: 900px;
+            max-width: 1200px;
             margin: 2rem auto;
-            background: white;
-            padding: 2rem;
+            padding: 1rem;
+            background-color: #ffffff;
             border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
 
-        label {
+        .instructions {
+            padding: 1rem;
+            background-color: #e6f7ff;
+            border: 1px solid #b3d9ff;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+        }
+
+        .instructions h2 {
+            margin-top: 0;
+            color: #004080;
+        }
+
+        .experiment-controls {
+            margin-bottom: 2rem;
+        }
+
+        .experiment-controls label {
+            display: block;
+            margin-bottom: 0.5rem;
             font-weight: bold;
         }
 
-        input {
-            width: calc(100% - 20px);
+        .experiment-controls input {
+            width: 100%;
             padding: 0.5rem;
-            margin-bottom: 1rem;
             border: 1px solid #ccc;
             border-radius: 4px;
+            margin-bottom: 1rem;
         }
 
-        .btn {
-            display: inline-block;
-            padding: 0.7rem 1.5rem;
+        .experiment-controls button {
             background-color: #004080;
             color: white;
+            padding: 0.7rem 1.5rem;
             border: none;
             border-radius: 4px;
             cursor: pointer;
         }
 
-        .btn:hover {
+        .experiment-controls button:hover {
             background-color: #003060;
         }
 
         .results {
-            margin-top: 2rem;
             padding: 1rem;
-            background: #e6f7ff;
+            background-color: #e6ffe6;
+            border: 1px solid #b3ffb3;
             border-radius: 8px;
+        }
+
+        .results h2 {
+            margin-top: 0;
+            color: #006600;
+        }
+
+        footer {
+            text-align: center;
+            padding: 1rem;
+            background-color: #004080;
+            color: white;
+            margin-top: 2rem;
+        }
+
+        footer a {
+            color: #b3d9ff;
+            text-decoration: none;
+        }
+
+        footer a:hover {
+            text-decoration: underline;
+        }
+
+        .simulation {
+            margin-top: 2rem;
+            text-align: center;
         }
 
         canvas {
             border: 1px solid #ccc;
-            margin-top: 2rem;
-        }
-
-        .simulation {
-            text-align: center;
-        }
-
-        #simulationCanvas {
-            border: 1px solid #ccc;
-            background: #eef7ff;
+            background-color: #f0f8ff;
+            border-radius: 8px;
         }
     </style>
 </head>
 <body>
     <header>
-        <h1>Flow Over a Notch Experiment</h1>
+        <h1>Momentum Theorem Experiment</h1>
     </header>
 
     <div class="container">
-        <div>
-            <label for="theta">Angle for V-Notch (θ in degrees):</label>
-            <input type="number" id="theta" placeholder="e.g., 60">
+        <div class="instructions">
+            <h2>Instructions</h2>
+            <p>Enter the required parameters below to calculate and verify the momentum theorem experimentally. Use the theoretical and experimental forces to check the validity of the theorem.</p>
+        </div>
 
-            <label for="breadth">Breadth for Rectangular Notch (B in m):</label>
-            <input type="number" id="breadth" placeholder="e.g., 0.3">
+        <div class="experiment-controls">
+            <label for="mass">Mass (kg):</label>
+            <input type="number" id="mass" placeholder="e.g., 10">
 
-            <label for="head">Head Over the Notch (H in m):</label>
-            <input type="number" id="head" placeholder="e.g., 0.1">
+            <label for="time-interval">Time Interval (s):</label>
+            <input type="number" id="time-interval" placeholder="e.g., 5">
 
-            <label for="actual-discharge">Actual Discharge (m³/s):</label>
-            <input type="number" id="actual-discharge" placeholder="e.g., 0.002">
+            <label for="nozzle-area">Nozzle Area (m<sup>2</sup>):</label>
+            <input type="number" id="nozzle-area" placeholder="e.g., 0.005">
 
-            <button class="btn" onclick="calculateDischarge()">Calculate & Simulate</button>
+            <label for="velocity">Velocity (m/s):</label>
+            <input type="number" id="velocity" placeholder="e.g., 20">
+
+            <button onclick="calculateForces()">Calculate</button>
         </div>
 
         <div class="results" id="results">
             <h2>Results</h2>
-            <p id="v-notch-discharge">V-Notch Theoretical Discharge: N/A</p>
-            <p id="rect-notch-discharge">Rectangular Notch Theoretical Discharge: N/A</p>
-            <p id="coeff-discharge">Coefficient of Discharge: N/A</p>
+            <p id="theoretical-force">Theoretical Force: N/A</p>
+            <p id="actual-force">Actual Force: N/A</p>
+            <p id="error-percentage">Error Percentage: N/A</p>
         </div>
 
-        <canvas id="simulationCanvas" width="800" height="400"></canvas>
+        <div class="simulation">
+            <h2>Simulation</h2>
+            <canvas id="simulationCanvas" width="800" height="400"></canvas>
+        </div>
     </div>
 
-    <script>
-        function calculateDischarge() {
-            const g = 9.81; // Acceleration due to gravity in m/s²
-            const theta = parseFloat(document.getElementById("theta").value);
-            const breadth = parseFloat(document.getElementById("breadth").value);
-            const head = parseFloat(document.getElementById("head").value);
-            const actualDischarge = parseFloat(document.getElementById("actual-discharge").value);
+    <footer>
+        <p>&copy; 2024 Fluid Mechanics Lab | <a href="https://eerc03-iiith.vlabs.ac.in/exp/jets/index.html" target="_blank">Original Experiment</a></p>
+    </footer>
 
-            if (isNaN(theta) || isNaN(breadth) || isNaN(head) || isNaN(actualDischarge)) {
-                alert("Please enter valid inputs.");
+    <script>
+        function calculateForces() {
+            const density = 1000; // Density of water in kg/m³
+            const mass = parseFloat(document.getElementById('mass').value);
+            const timeInterval = parseFloat(document.getElementById('time-interval').value);
+            const nozzleArea = parseFloat(document.getElementById('nozzle-area').value);
+            const velocity = parseFloat(document.getElementById('velocity').value);
+
+            if (isNaN(mass) || isNaN(timeInterval) || isNaN(nozzleArea) || isNaN(velocity)) {
+                alert('Please fill in all fields with valid numbers.');
                 return;
             }
 
-            // Convert theta to radians
-            const thetaRad = (theta * Math.PI) / 180;
+            // Calculate actual force
+            const actualForce = mass * velocity / timeInterval;
 
-            // Calculate theoretical discharge for V-Notch
-            const vNotchTheoretical = (8 / 15) * Math.sqrt(2 * g) * Math.tan(thetaRad / 2) * Math.pow(head, 2.5);
+            // Calculate theoretical force
+            const theoreticalForce = 2 * density * nozzleArea * Math.pow(velocity, 2);
 
-            // Calculate theoretical discharge for Rectangular Notch
-            const rectNotchTheoretical = (2 / 3) * Math.sqrt(2 * g) * breadth * Math.pow(head, 1.5);
+            // Calculate error percentage
+            const errorPercentage = Math.abs(theoreticalForce - actualForce) / theoreticalForce * 100;
 
-            // Calculate coefficient of discharge
-            const coeffDischarge = actualDischarge / (vNotchTheoretical + rectNotchTheoretical);
+            // Display results
+            document.getElementById('theoretical-force').innerText = `Theoretical Force: ${theoreticalForce.toFixed(2)} N`;
+            document.getElementById('actual-force').innerText = `Actual Force: ${actualForce.toFixed(2)} N`;
+            document.getElementById('error-percentage').innerText = `Error Percentage: ${errorPercentage.toFixed(2)}%`;
 
-            // Update results in the DOM
-            document.getElementById("v-notch-discharge").innerText = `V-Notch Theoretical Discharge: ${vNotchTheoretical.toFixed(5)} m³/s`;
-            document.getElementById("rect-notch-discharge").innerText = `Rectangular Notch Theoretical Discharge: ${rectNotchTheoretical.toFixed(5)} m³/s`;
-            document.getElementById("coeff-discharge").innerText = `Coefficient of Discharge: ${coeffDischarge.toFixed(5)}`;
-
-            // Start simulation
-            startSimulation(head, vNotchTheoretical, rectNotchTheoretical);
+            startSimulation(velocity, nozzleArea);
         }
 
-        function startSimulation(head, vNotchDischarge, rectNotchDischarge) {
-            const canvas = document.getElementById("simulationCanvas");
-            const ctx = canvas.getContext("2d");
+        function startSimulation(velocity, nozzleArea) {
+            const canvas = document.getElementById('simulationCanvas');
+            const ctx = canvas.getContext('2d');
 
-            let waterLevel = canvas.height - head * 500; // Scale height dynamically based on head
-            let flowRateV = vNotchDischarge * 1000; // Scale flow rate for simulation
-            let flowRateR = rectNotchDischarge * 1000;
+            let jetX = 100;
+            const jetY = 200;
+            const vaneX = 600;
+            const vaneY = 180;
+            const jetRadius = nozzleArea * 5000; // Proportional size for visualization
 
-            function drawSimulation() {
+            function drawJet() {
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-                // Draw background (unfilled portion)
-                ctx.fillStyle = "#f0f0f0";
-                ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-                // Draw water (filled portion)
-                ctx.fillStyle = "rgba(0, 120, 255, 0.5)";
-                ctx.fillRect(0, waterLevel, canvas.width, canvas.height - waterLevel);
-
-                // Draw V-Notch
+                // Draw jet particles
                 ctx.beginPath();
-                ctx.moveTo(200, canvas.height);
-                ctx.lineTo(250, waterLevel);
-                ctx.lineTo(150, waterLevel);
-                ctx.closePath();
-                ctx.fillStyle = "gray";
+                ctx.arc(jetX, jetY, jetRadius, 0, Math.PI * 2);
+                ctx.fillStyle = 'blue';
                 ctx.fill();
+                ctx.closePath();
 
-                // Draw Rectangular Notch
-                ctx.fillStyle = "gray";
-                ctx.fillRect(500, waterLevel - 50, 100, 50);
+                // Draw vane
+                ctx.beginPath();
+                ctx.rect(vaneX, vaneY, 20, 100);
+                ctx.fillStyle = 'gray';
+                ctx.fill();
+                ctx.closePath();
 
-                // Draw water flowing out
-                ctx.fillStyle = "blue";
-                ctx.fillRect(150, canvas.height - flowRateV, 100, 10);
-                ctx.fillRect(500, canvas.height - flowRateR, 100, 10);
+                // Draw force arrow
+                ctx.beginPath();
+                ctx.moveTo(vaneX, vaneY + 50);
+                ctx.lineTo(vaneX + 50, vaneY + 50);
+                ctx.lineWidth = 3;
+                ctx.strokeStyle = 'red';
+                ctx.stroke();
+                ctx.closePath();
 
-                // Draw labels
-                ctx.fillStyle = "black";
-                ctx.fillText("V-Notch", 200, canvas.height - 10);
-                ctx.fillText("Rectangular Notch", 520, canvas.height - 10);
+                ctx.font = '16px Arial';
+                ctx.fillStyle = 'black';
+                ctx.fillText('Force', vaneX + 55, vaneY + 55);
             }
 
-            drawSimulation();
+            function animate() {
+                if (jetX < vaneX - 20) {
+                    jetX += velocity / 20; // Adjust speed based on velocity
+                    drawJet();
+                    requestAnimationFrame(animate);
+                } else {
+                    ctx.font = '20px Arial';
+                    ctx.fillStyle = 'green';
+                    ctx.fillText('Impact!', vaneX + 30, vaneY + 50);
+                }
+            }
+
+            drawJet();
+            animate();
         }
     </script>
 </body>
